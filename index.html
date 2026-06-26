@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>India Road Trip — All 28 States</title>
 <style>
   :root {
@@ -15,42 +16,82 @@
     color:var(--text);
     font-family:'Segoe UI',system-ui,sans-serif;
   }
+
+  /* Login Portal Styling */
+  #login-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000; padding: 20px;
+  }
+  .login-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    padding: 32px 24px; border-radius: 16px;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+  .login-card h2 { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 6px; letter-spacing: 1px; }
+  .login-card p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .form-group { text-align: left; margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 11px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+  .form-group input {
+    width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.3); color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: var(--gold); }
+  .login-btn {
+    width: 100%; padding: 13px; border: none; border-radius: 8px;
+    background: var(--gold); color: var(--bg1); font-weight: 700; font-size: 13px;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; transition: opacity 0.2s;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  #login-err { color: #f87171; font-size: 12px; margin-top: 14px; display: none; font-weight: 600; }
+
+  /* App Dashboard Frame */
+  #main-app { display: none; }
   .header {
     background:linear-gradient(90deg,#0d2137,#1a1040);
     border-bottom:2px solid var(--gold);
     padding:20px 20px 0;
   }
   .header-inner, .content { max-width:900px; margin:0 auto; }
-  .eyebrow { font-size:11px; color:var(--gold); letter-spacing:5px; margin-bottom:6px; }
-  .title { font-size:26px; font-weight:900; color:#fff; margin-bottom:4px; }
+  .eyebrow { font-size:11px; color:var(--gold); letter-spacing:3px; margin-bottom:6px; }
+  .title { font-size:24px; font-weight:900; color:#fff; margin-bottom:4px; }
   .subtitle { font-size:13px; color:var(--muted); margin-bottom:16px; }
-  .tabs { display:flex; gap:8px; flex-wrap:wrap; }
+  
+  /* Mobile Horizontal Tab Navigation Box */
+  .tabs-scroll-box { overflow-x: auto; margin-right: -20px; padding-right: 20px; -webkit-overflow-scrolling: touch; }
+  .tabs-scroll-box::-webkit-scrollbar { display: none; }
+  .tabs { display:flex; gap:8px; flex-wrap:nowrap; width: max-content; padding-bottom: 2px; }
   .tab-btn {
     padding:10px 18px; border-radius:8px 8px 0 0; border:none;
     background:rgba(255,255,255,0.06); color:var(--muted);
     font-weight:700; font-size:12px; cursor:pointer;
-    text-transform:uppercase; letter-spacing:1px;
+    text-transform:uppercase; letter-spacing:1px; white-space: nowrap;
   }
   .tab-btn.active { background:var(--gold); color:var(--bg1); }
   .content { padding:24px 16px; }
   .view { display:none; }
   .view.active { display:block; }
 
-  /* Overview stats grid */
+  /* Stats overview block */
   .stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:24px; }
   .stat-card {
     background:rgba(255,255,255,0.05); border-radius:12px; padding:16px 18px;
     border:1px solid rgba(245,158,11,0.2); text-align:center;
   }
   .stat-label { font-size:11px; color:var(--muted); letter-spacing:1px; margin-bottom:6px; }
-  .stat-value { font-size:22px; font-weight:800; color:var(--gold); }
+  .stat-value { font-size:19px; font-weight:800; color:var(--gold); }
 
   .section-label { margin-bottom:20px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; }
 
   .leg-card {
     background:rgba(255,255,255,0.04); border-radius:14px; padding:14px 18px; margin-bottom:10px;
     cursor:pointer; display:flex; align-items:center; gap:14px; transition:background .2s;
-    border:1px solid; /* color set inline per leg */
+    border:1px solid;
   }
   .leg-card:hover { background:rgba(255,255,255,0.08); }
   .leg-badge {
@@ -66,10 +107,10 @@
     border-radius:14px; padding:18px 20px;
   }
   .route-box-title { font-weight:700; color:var(--gold); margin-bottom:10px; }
-  .route-text { font-size:12px; color:#cbd5e1; line-height:2; }
+  .route-text { font-size:12px; color:#cbd5e1; line-height:2; word-break: break-word; }
   .route-text b { color:#fff; }
 
-  /* Itinerary view */
+  /* Itinerary panel contents */
   .leg-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
   .leg-pill {
     padding:6px 12px; border-radius:999px; border:2px solid #334155;
@@ -87,10 +128,10 @@
   .stop-card { background:rgba(255,255,255,0.04); border-radius:14px; margin-bottom:12px; overflow:hidden; border:1px solid; }
   .stop-head { padding:13px 17px; cursor:pointer; display:flex; align-items:center; gap:12px; }
   .stop-day-badge { border-radius:7px; padding:4px 9px; font-size:10px; font-weight:700; color:#fff; flex-shrink:0; }
-  .stop-route { flex:1; }
-  .stop-route .from, .stop-route .to { font-weight:700; font-size:14px; }
-  .stop-route .arrow { color:#475569; margin:0 8px; }
-  .stop-route .meta { color:#475569; font-size:11px; margin-left:8px; }
+  .stop-route { flex:1; min-width: 0; }
+  .stop-route .from, .stop-route .to { font-weight:700; font-size:14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; max-width: 90px; vertical-align: bottom; }
+  .stop-route .arrow { color:#475569; margin:0 4px; }
+  .stop-route .meta { color:#475569; font-size:11px; margin-left:4px; display: block; margin-top: 2px; }
   .stop-chevron { color:var(--gold); }
   .stop-body { padding:0 17px 17px; border-top:1px solid; }
   .stop-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
@@ -104,7 +145,7 @@
   .fuel-value { font-size:16px; font-weight:800; color:var(--gold); }
   .hidden { display:none; }
 
-  /* States view */
+  /* Checklist and state configurations */
   .states-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
   .state-card {
     background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 14px;
@@ -121,22 +162,22 @@
   .states-summary-num { font-size:20px; font-weight:800; color:#4ade80; }
   .states-summary-note { font-size:12px; color:var(--muted); margin-top:4px; }
 
-  /* Budget view */
+  /* Financial tracking blocks */
   .expense-row {
     background:rgba(255,255,255,0.04); border-radius:12px; padding:14px 18px; margin-bottom:10px;
     border:1px solid rgba(255,255,255,0.07); display:flex; justify-content:space-between; align-items:center; gap:10px;
   }
-  .expense-label { font-size:14px; color:#e2e8f0; }
+  .expense-label { font-size:13px; color:#e2e8f0; }
   .expense-note { font-size:11px; color:var(--dim); margin-top:2px; }
-  .expense-amount { font-weight:800; color:var(--gold); font-size:15px; flex-shrink:0; }
+  .expense-amount { font-weight:800; color:var(--gold); font-size:14px; flex-shrink:0; }
   .total-box {
     background:linear-gradient(90deg,rgba(245,158,11,0.13),rgba(245,158,11,0.07));
     border-radius:14px; padding:18px 22px; margin-top:16px; border:2px solid var(--gold);
-    display:flex; justify-content:space-between; align-items:center;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap:10px;
   }
   .total-label { font-size:11px; color:var(--gold); letter-spacing:2px; }
-  .total-sub { font-size:15px; font-weight:700; color:#fff; margin-top:2px; }
-  .total-value { font-size:26px; font-weight:900; color:#fff; }
+  .total-sub { font-size:13px; font-weight:700; color:#fff; margin-top:2px; }
+  .total-value { font-size:24px; font-weight:900; color:#fff; }
   .budget-cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
   .budget-col { background:rgba(255,255,255,0.04); border-radius:12px; padding:14px 16px; }
   .budget-col-title { font-weight:700; margin-bottom:8px; font-size:13px; }
@@ -144,7 +185,7 @@
   .budget-col-title.warn { color:#f87171; }
   .budget-line { font-size:11px; color:#cbd5e1; margin-bottom:5px; }
 
-  /* Tips view */
+  /* Travel advice columns */
   .tip-card {
     background:rgba(255,255,255,0.04); border-radius:12px; padding:14px 18px; margin-bottom:10px;
     border:1px solid rgba(255,255,255,0.06); display:flex; gap:12px;
@@ -153,31 +194,81 @@
   .tip-title { font-weight:700; font-size:14px; margin-bottom:4px; }
   .tip-body { font-size:12px; color:#cbd5e1; line-height:1.7; }
 
-  @media (max-width:520px){
+  /* Mobile Layout Adaptation Queries */
+  @media (max-width:600px){
     .stats-grid, .stop-grid2, .budget-cols, .states-grid { grid-template-columns:1fr; }
+    .title { font-size:20px; }
+    .eyebrow { letter-spacing:1px; }
+    .stop-route { display: flex; flex-direction: column; }
+    .stop-route .from, .stop-route .to { max-width: 100%; display: inline; }
+    .stop-route .arrow { display: none; }
+    .stop-route .meta { margin-left: 0; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-inner">
-    <div class="eyebrow">🇮🇳 COMPLETE INDIA ROAD TRIP — ALL 28 STATES</div>
-    <div class="title">Kochi → 28 States → Kochi</div>
-    <div class="subtitle">Maruti Jimny 4WD • 9 Legs • ~16,700 km • 66 Days</div>
-    <div class="tabs" id="tabs"></div>
+<div id="login-overlay">
+  <div class="login-card">
+    <h2>Road Trip Portal</h2>
+    <p>Sign in to unlock the 28-state master itinerary</p>
+    <div class="form-group">
+      <label for="uid">Username</label>
+      <input type="text" id="uid" autocomplete="off" placeholder="Enter username">
+    </div>
+    <div class="form-group">
+      <label for="pwd">Password</label>
+      <input type="password" id="pwd" placeholder="Enter password">
+    </div>
+    <button class="login-btn" onclick="verifyCredentials()">Sign In</button>
+    <div id="login-err">Invalid Username or Password</div>
   </div>
 </div>
 
-<div class="content">
-  <div class="view active" id="view-overview"></div>
-  <div class="view" id="view-itinerary"></div>
-  <div class="view" id="view-states"></div>
-  <div class="view" id="view-budget"></div>
-  <div class="view" id="view-tips"></div>
+<div id="main-app">
+  <div class="header">
+    <div class="header-inner">
+      <div class="eyebrow">🇮🇳 COMPLETE INDIA ROAD TRIP — ALL 28 STATES</div>
+      <div class="title">Kochi → 28 States → Kochi</div>
+      <div class="subtitle">Maruti Jimny 4WD • 9 Legs • ~16,700 km • 66 Days</div>
+      <div class="tabs-scroll-box">
+        <div class="tabs" id="tabs"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="view active" id="view-overview"></div>
+    <div class="view" id="view-itinerary"></div>
+    <div class="view" id="view-states"></div>
+    <div class="view" id="view-budget"></div>
+    <div class="view" id="view-tips"></div>
+  </div>
 </div>
 
 <script>
+// Authentication Engine
+function verifyCredentials() {
+  const user = document.getElementById("uid").value;
+  const pass = document.getElementById("pwd").value;
+  const errorMsg = document.getElementById("login-err");
+
+  if (user === "Ameesh" && pass === "karthika") {
+    document.getElementById("login-overlay").style.display = "none";
+    document.getElementById("main-app").style.display = "block";
+    renderAll();
+  } else {
+    errorMsg.style.display = "block";
+  }
+}
+
+// Global Listener for keyboard 'Enter' key submissions
+document.querySelectorAll("#login-overlay input").forEach(el => {
+  el.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") verifyCredentials();
+  });
+});
+
 const legs = [
   {
     id: 1, leg: "LEG 1", title: "Kerala → Tamil Nadu → Karnataka",
@@ -274,7 +365,7 @@ const legs = [
       { day:"Day 28", from:"Gwalior", to:"Khajuraho", km:380, dur:"7h",
         spots:["Western Group Temples (UNESCO)","Eastern Group","Panna Tiger Reserve"],
         stay:"Hotel Lalit Temple View", stayEst:"₹4,500", food:["Raja Café","Mediterraneo"],foodEst:"₹700", fuel:"₹1,600", tip:"Sound & Light show at Khajuraho temples at 7 PM" },
-      { day:"Day 29", from:"Khajuraho", to:"Orchha + Bhopal", km:450, dur:"8h",
+      { day:"Day 29", from:"Gwalior", to:"Orchha + Bhopal", km:450, dur:"8h",
         spots:["Orchha Fort","Ram Raja Temple","Bhimbetka Caves","Bhopal Taj-ul-Masajid"],
         stay:"MPTDC Lake View Ashok Bhopal", stayEst:"₹3,000", food:["Manohar Dairy Bhopal","Chaat stalls"],foodEst:"₹600", fuel:"₹1,890", tip:"Bhimbetka rock art is 30,000 years old — plan 2 hrs" },
       { day:"Day 30", from:"Bhopal", to:"Kanha + Jabalpur", km:380, dur:"7h",
@@ -649,8 +740,6 @@ function renderAll() {
   renderBudget();
   renderTips();
 }
-
-renderAll();
 </script>
 
 </body>
