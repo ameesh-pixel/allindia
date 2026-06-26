@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>India Road Trip — All 28 States</title>
+<style>
+  :root {
+    --bg1:#0a0f1e; --bg2:#0d1f3c; --bg3:#1a1040;
+    --gold:#f59e0b; --text:#f1f5f9; --muted:#94a3b8; --dim:#64748b;
+  }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body {
+    min-height:100vh;
+    background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 60%,var(--bg1) 100%);
+    color:var(--text);
+    font-family:'Segoe UI',system-ui,sans-serif;
+  }
+  .header {
+    background:linear-gradient(90deg,#0d2137,#1a1040);
+    border-bottom:2px solid var(--gold);
+    padding:20px 20px 0;
+  }
+  .header-inner, .content { max-width:900px; margin:0 auto; }
+  .eyebrow { font-size:11px; color:var(--gold); letter-spacing:5px; margin-bottom:6px; }
+  .title { font-size:26px; font-weight:900; color:#fff; margin-bottom:4px; }
+  .subtitle { font-size:13px; color:var(--muted); margin-bottom:16px; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; }
+  .tab-btn {
+    padding:10px 18px; border-radius:8px 8px 0 0; border:none;
+    background:rgba(255,255,255,0.06); color:var(--muted);
+    font-weight:700; font-size:12px; cursor:pointer;
+    text-transform:uppercase; letter-spacing:1px;
+  }
+  .tab-btn.active { background:var(--gold); color:var(--bg1); }
+  .content { padding:24px 16px; }
+  .view { display:none; }
+  .view.active { display:block; }
+
+  /* Overview stats grid */
+  .stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:24px; }
+  .stat-card {
+    background:rgba(255,255,255,0.05); border-radius:12px; padding:16px 18px;
+    border:1px solid rgba(245,158,11,0.2); text-align:center;
+  }
+  .stat-label { font-size:11px; color:var(--muted); letter-spacing:1px; margin-bottom:6px; }
+  .stat-value { font-size:22px; font-weight:800; color:var(--gold); }
+
+  .section-label { margin-bottom:20px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; }
+
+  .leg-card {
+    background:rgba(255,255,255,0.04); border-radius:14px; padding:14px 18px; margin-bottom:10px;
+    cursor:pointer; display:flex; align-items:center; gap:14px; transition:background .2s;
+    border:1px solid; /* color set inline per leg */
+  }
+  .leg-card:hover { background:rgba(255,255,255,0.08); }
+  .leg-badge {
+    width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:14px; color:#fff; flex-shrink:0;
+  }
+  .leg-card-title { font-weight:700; font-size:15px; }
+  .leg-card-sub { font-size:12px; color:var(--dim); margin-top:3px; }
+  .leg-card-arrow { color:var(--gold); font-size:18px; margin-left:auto; }
+
+  .route-box {
+    margin-top:24px; background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.27);
+    border-radius:14px; padding:18px 20px;
+  }
+  .route-box-title { font-weight:700; color:var(--gold); margin-bottom:10px; }
+  .route-text { font-size:12px; color:#cbd5e1; line-height:2; }
+  .route-text b { color:#fff; }
+
+  /* Itinerary view */
+  .leg-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+  .leg-pill {
+    padding:6px 12px; border-radius:999px; border:2px solid #334155;
+    background:transparent; color:#fff; font-weight:700; font-size:11px; cursor:pointer;
+  }
+  .leg-pill.active { border-color: var(--pill-color, var(--gold)); background: var(--pill-color, var(--gold)); }
+
+  .empty-hint { color:#475569; text-align:center; padding:60px 0; font-size:14px; }
+
+  .leg-header { margin-bottom:20px; }
+  .leg-header-days { font-size:10px; letter-spacing:4px; margin-bottom:4px; }
+  .leg-header-title { font-size:20px; font-weight:800; }
+  .leg-header-sub { font-size:12px; color:var(--muted); margin-top:4px; }
+
+  .stop-card { background:rgba(255,255,255,0.04); border-radius:14px; margin-bottom:12px; overflow:hidden; border:1px solid; }
+  .stop-head { padding:13px 17px; cursor:pointer; display:flex; align-items:center; gap:12px; }
+  .stop-day-badge { border-radius:7px; padding:4px 9px; font-size:10px; font-weight:700; color:#fff; flex-shrink:0; }
+  .stop-route { flex:1; }
+  .stop-route .from, .stop-route .to { font-weight:700; font-size:14px; }
+  .stop-route .arrow { color:#475569; margin:0 8px; }
+  .stop-route .meta { color:#475569; font-size:11px; margin-left:8px; }
+  .stop-chevron { color:var(--gold); }
+  .stop-body { padding:0 17px 17px; border-top:1px solid; }
+  .stop-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .stop-panel { background:rgba(0,0,0,0.25); border-radius:10px; padding:12px; }
+  .panel-label { font-size:10px; color:var(--muted); margin-bottom:6px; letter-spacing:1px; }
+  .panel-line { font-size:12px; color:#e2e8f0; margin-bottom:3px; }
+  .panel-note { font-size:10px; color:var(--dim); margin-top:5px; }
+  .stop-tip-panel { background:rgba(245,158,11,0.08); border-radius:10px; padding:12px; border:1px solid rgba(245,158,11,0.2); }
+  .stop-tip-label { font-size:10px; color:var(--gold); margin-bottom:4px; }
+  .stop-tip-text { font-size:11px; color:#e2e8f0; line-height:1.6; }
+  .fuel-value { font-size:16px; font-weight:800; color:var(--gold); }
+  .hidden { display:none; }
+
+  /* States view */
+  .states-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .state-card {
+    background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 14px;
+    display:flex; align-items:center; gap:10px; border:1px solid;
+  }
+  .state-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .state-name { font-weight:600; font-size:13px; }
+  .state-leg { font-size:10px; color:var(--dim); margin-top:1px; }
+  .state-check { font-size:16px; margin-left:auto; }
+  .states-summary {
+    margin-top:20px; background:rgba(22,163,74,0.1); border:1px solid rgba(22,163,74,0.33);
+    border-radius:12px; padding:14px 18px; text-align:center;
+  }
+  .states-summary-num { font-size:20px; font-weight:800; color:#4ade80; }
+  .states-summary-note { font-size:12px; color:var(--muted); margin-top:4px; }
+
+  /* Budget view */
+  .expense-row {
+    background:rgba(255,255,255,0.04); border-radius:12px; padding:14px 18px; margin-bottom:10px;
+    border:1px solid rgba(255,255,255,0.07); display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .expense-label { font-size:14px; color:#e2e8f0; }
+  .expense-note { font-size:11px; color:var(--dim); margin-top:2px; }
+  .expense-amount { font-weight:800; color:var(--gold); font-size:15px; flex-shrink:0; }
+  .total-box {
+    background:linear-gradient(90deg,rgba(245,158,11,0.13),rgba(245,158,11,0.07));
+    border-radius:14px; padding:18px 22px; margin-top:16px; border:2px solid var(--gold);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .total-label { font-size:11px; color:var(--gold); letter-spacing:2px; }
+  .total-sub { font-size:15px; font-weight:700; color:#fff; margin-top:2px; }
+  .total-value { font-size:26px; font-weight:900; color:#fff; }
+  .budget-cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+  .budget-col { background:rgba(255,255,255,0.04); border-radius:12px; padding:14px 16px; }
+  .budget-col-title { font-weight:700; margin-bottom:8px; font-size:13px; }
+  .budget-col-title.good { color:#4ade80; }
+  .budget-col-title.warn { color:#f87171; }
+  .budget-line { font-size:11px; color:#cbd5e1; margin-bottom:5px; }
+
+  /* Tips view */
+  .tip-card {
+    background:rgba(255,255,255,0.04); border-radius:12px; padding:14px 18px; margin-bottom:10px;
+    border:1px solid rgba(255,255,255,0.06); display:flex; gap:12px;
+  }
+  .tip-icon { font-size:24px; flex-shrink:0; }
+  .tip-title { font-weight:700; font-size:14px; margin-bottom:4px; }
+  .tip-body { font-size:12px; color:#cbd5e1; line-height:1.7; }
+
+  @media (max-width:520px){
+    .stats-grid, .stop-grid2, .budget-cols, .states-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="eyebrow">🇮🇳 COMPLETE INDIA ROAD TRIP — ALL 28 STATES</div>
+    <div class="title">Kochi → 28 States → Kochi</div>
+    <div class="subtitle">Maruti Jimny 4WD • 9 Legs • ~16,700 km • 66 Days</div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="view active" id="view-overview"></div>
+  <div class="view" id="view-itinerary"></div>
+  <div class="view" id="view-states"></div>
+  <div class="view" id="view-budget"></div>
+  <div class="view" id="view-tips"></div>
+</div>
+
+<script>
+const legs = [
+  {
+    id: 1, leg: "LEG 1", title: "Kerala → Tamil Nadu → Karnataka",
+    color: "#16a34a", days: "Day 1–10", km: 1800,
+    states: ["Kerala","Tamil Nadu","Karnataka"],
+    route: [
+      { day:"Day 1", from:"Kochi", to:"Munnar", km:130, dur:"4h",
+        spots:["Mattupetty Dam","Top Station","Eravikulam NP"],
+        stay:"Windermere Estate", stayEst:"₹3,500", food:["Saravana Bhavan","Local toddy shop"],foodEst:"₹700", fuel:"₹550", tip:"Start by 6 AM — Munnar roads get congested" },
+      { day:"Day 2", from:"Munnar", to:"Madurai", km:200, dur:"5.5h",
+        spots:["Meenakshi Amman Temple","Thirumalai Nayakkar Palace","Gandhi Museum"],
+        stay:"Hotel Heritage Madurai", stayEst:"₹3,000", food:["Murugan Idli Shop","Amma Mess"],foodEst:"₹600", fuel:"₹840", tip:"Temple closes 12:30–4 PM" },
+      { day:"Day 3", from:"Madurai", to:"Rameswaram + Kanyakumari", km:270, dur:"6h",
+        spots:["Ramanathaswamy Temple","Pamban Bridge","Vivekananda Rock","Sunrise Point"],
+        stay:"TTDC Hotel Kanyakumari", stayEst:"₹2,500", food:["Ananda Bhavan","Seafood shack"],foodEst:"₹600", fuel:"₹1,135", tip:"Stay Kanyakumari for sunrise — worth it" },
+      { day:"Day 4", from:"Kanyakumari", to:"Ooty", km:260, dur:"6h",
+        spots:["Doddabetta Peak","Botanical Garden","Nilgiri Mountain Railway"],
+        stay:"Savoy Hotel Ooty", stayEst:"₹4,000", food:["Hyderabad Biryani Hotel","Shinkow's"],foodEst:"₹700", fuel:"₹1,095", tip:"No driving after dark on ghat roads" },
+      { day:"Day 5", from:"Ooty", to:"Mysuru", km:165, dur:"4h",
+        spots:["Mysore Palace","Chamundi Hills","Devaraja Market"],
+        stay:"Hotel Roopa", stayEst:"₹3,000", food:["Hotel RRR Thali","Guru Sweet Mart"],foodEst:"₹600", fuel:"₹695", tip:"Palace illuminated on Sundays 7–8 PM" },
+      { day:"Day 6", from:"Mysuru", to:"Coorg + Chikmagalur", km:230, dur:"5h",
+        spots:["Abbey Falls","Raja's Seat","Mullayanagiri Peak"],
+        stay:"Coffee estate homestay", stayEst:"₹3,500", food:["Coorg Cuisines Madikeri","Estate café"],foodEst:"₹700", fuel:"₹970", tip:"Jimny handles estate mud roads perfectly" },
+      { day:"Day 7", from:"Chikmagalur", to:"Hampi", km:290, dur:"6h",
+        spots:["Virupaksha Temple","Vittala Temple & Stone Chariot","Matanga Hill"],
+        stay:"Hotel Hampi International", stayEst:"₹2,800", food:["Mango Tree Restaurant","Laughing Buddha"],foodEst:"₹600", fuel:"₹1,220", tip:"Hire local guide — ruins are massive" },
+      { day:"Day 8–9", from:"Hampi", to:"Bengaluru", km:340, dur:"7h",
+        spots:["Lalbagh","Cubbon Park","Tipu Sultan Palace","UB City"],
+        stay:"Ibis Bengaluru", stayEst:"₹4,000", food:["Vidyarthi Bhavan","MTR Malleswaram","Truffles"],foodEst:"₹1,000", fuel:"₹1,430", tip:"2-night stop — service Jimny here" },
+    ]
+  },
+  {
+    id: 2, leg: "LEG 2", title: "Goa → Maharashtra → Gujarat",
+    color: "#0891b2", days: "Day 11–20", km: 2200,
+    states: ["Goa","Maharashtra","Gujarat"],
+    route: [
+      { day:"Day 10–11", from:"Bengaluru", to:"Goa", km:570, dur:"10h",
+        spots:["Baga Beach","Fort Aguada","Dudhsagar Falls","Basilica of Bom Jesus"],
+        stay:"Casa De Goa / Airbnb villa", stayEst:"₹4,500", food:["Fisherman's Wharf","Vinayak Family Restaurant"],foodEst:"₹1,000", fuel:"₹2,395", tip:"2 nights Goa. Dudhsagar needs 4WD track — Jimny shines!" },
+      { day:"Day 12–13", from:"Goa", to:"Mumbai", km:595, dur:"10h",
+        spots:["Gateway of India","Marine Drive","Elephanta Caves","Dharavi","Siddhivinayak"],
+        stay:"Hotel Residency Fort", stayEst:"₹4,500", food:["Bade Miya","Sardar Pav Bhaji","Olympia Café"],foodEst:"₹900", fuel:"₹2,500", tip:"2 nights Mumbai. Park at hotel, use local transport inside city" },
+      { day:"Day 14", from:"Mumbai", to:"Pune", km:160, dur:"3.5h",
+        spots:["Shaniwar Wada","Aga Khan Palace","Sinhagad Fort"],
+        stay:"Marriott Pune", stayEst:"₹4,000", food:["Vaishali","Marz-O-Rin"],foodEst:"₹800", fuel:"₹675", tip:"NH48 expressway — smooth ride for Jimny" },
+      { day:"Day 15", from:"Pune", to:"Aurangabad (Ajanta–Ellora)", km:395, dur:"7h",
+        spots:["Ajanta Caves (UNESCO)","Ellora Caves (UNESCO)","Bibi Ka Maqbara"],
+        stay:"Hotel Kailas / MTDC", stayEst:"₹2,800", food:["Bhoj Restaurant","Swad"],foodEst:"₹600", fuel:"₹1,660", tip:"Ajanta closed Mondays — check schedule!" },
+      { day:"Day 16–17", from:"Aurangabad", to:"Ahmedabad", km:630, dur:"10h",
+        spots:["Sabarmati Ashram","Adalaj Stepwell","Sidi Saiyyed Mosque","Kankaria Lake"],
+        stay:"Hotel Cambay Grand", stayEst:"₹3,500", food:["Agashiye Rooftop","Manek Chowk street food"],foodEst:"₹700", fuel:"₹2,650", tip:"2 nights Ahmedabad. Manek Chowk night food market is unmissable" },
+      { day:"Day 18", from:"Ahmedabad", to:"Rann of Kutch + Bhuj", km:350, dur:"6h",
+        spots:["White Rann","Great Rann of Kutch","Bhuj Palace","Aina Mahal"],
+        stay:"Rann Utsav Resort / Hotel Prince Bhuj", stayEst:"₹3,500", food:["Hotel Annapurna","Local Kutchi thali"],foodEst:"₹600", fuel:"₹1,470", tip:"Jimny handles the salt flats beautifully — go at sunset!" },
+      { day:"Day 19", from:"Bhuj", to:"Somnath + Junagadh", km:430, dur:"7.5h",
+        spots:["Somnath Temple","Gir National Forest","Junagadh Fort"],
+        stay:"Hotel Mayuram Somnath", stayEst:"₹2,500", food:["Temple prasad thali","Hotel Santoor"],foodEst:"₹500", fuel:"₹1,810", tip:"Gir Lion safari needs advance booking" },
+    ]
+  },
+  {
+    id: 3, leg: "LEG 3", title: "Rajasthan Desert Loop",
+    color: "#d97706", days: "Day 21–30", km: 2100,
+    states: ["Rajasthan"],
+    route: [
+      { day:"Day 20", from:"Junagadh", to:"Udaipur", km:470, dur:"8h",
+        spots:["Lake Pichola","City Palace","Jagdish Temple","Sajjangarh Fort"],
+        stay:"Hotel Udai Kothi", stayEst:"₹4,000", food:["Natraj Dining Hall","Ambrai Restaurant"],foodEst:"₹800", fuel:"₹1,975", tip:"Most romantic city in India — plan sunset boat ride" },
+      { day:"Day 21", from:"Udaipur", to:"Jodhpur", km:260, dur:"5h",
+        spots:["Mehrangarh Fort","Jaswant Thada","Clock Tower Bazaar"],
+        stay:"Hotel Haveli Inn Pal", stayEst:"₹3,500", food:["Gypsy Restaurant","Mishrilal Makhania Lassi"],foodEst:"₹700", fuel:"₹1,095", tip:"Blue City sunset from Mehrangarh fort — magical" },
+      { day:"Day 22", from:"Jodhpur", to:"Jaisalmer", km:290, dur:"5h",
+        spots:["Jaisalmer Fort","Sam Sand Dunes","Patwon Ki Haveli","Gadisar Lake"],
+        stay:"Desert Haveli Resort", stayEst:"₹4,000", food:["Trio Restaurant","Saffron Rooftop"],foodEst:"₹800", fuel:"₹1,220", tip:"Jimny off-road on Sam Dunes — best experience of the trip!" },
+      { day:"Day 23", from:"Jaisalmer", to:"Bikaner + Pushkar", km:480, dur:"8h",
+        spots:["Junagarh Fort Bikaner","Karni Mata Temple","Pushkar Lake","Brahma Temple"],
+        stay:"Hotel Karni Bhawan Bikaner", stayEst:"₹2,800", food:["Heeralal's sweets","Pushkar dhaba"],foodEst:"₹600", fuel:"₹2,020", tip:"Rat temple in Karni Mata is unique — don't miss" },
+      { day:"Day 24–25", from:"Pushkar", to:"Jaipur", km:150, dur:"3h",
+        spots:["Hawa Mahal","Amber Fort","City Palace","Jantar Mantar","Albert Hall"],
+        stay:"Pearl Palace Heritage", stayEst:"₹3,500", food:["LMB Restaurant","Chokhi Dhani"],foodEst:"₹900", fuel:"₹630", tip:"2 nights — Jaipur needs full day minimum" },
+      { day:"Day 26", from:"Jaipur", to:"Ranthambore", km:175, dur:"3.5h",
+        spots:["Ranthambore Tiger Reserve Safari","Ranthambore Fort"],
+        stay:"RTDC Vinayak or Sher Bagh Camp", stayEst:"₹4,500", food:["Resort dining"],foodEst:"₹700", fuel:"₹735", tip:"Book tiger safari zone 2/3/4 online — fills up fast" },
+    ]
+  },
+  {
+    id: 4, leg: "LEG 4", title: "Madhya Pradesh Heritage",
+    color: "#7c3aed", days: "Day 31–36", km: 1500,
+    states: ["Madhya Pradesh"],
+    route: [
+      { day:"Day 27", from:"Ranthambore", to:"Khajuraho via Gwalior", km:700, dur:"12h",
+        spots:["Gwalior Fort","Man Singh Palace"],
+        stay:"Hotel Usha Kiran Palace Gwalior", stayEst:"₹4,000", food:["Kwality Restaurant","Indian Coffee House"],foodEst:"₹700", fuel:"₹2,940", tip:"Break journey overnight in Gwalior" },
+      { day:"Day 28", from:"Gwalior", to:"Khajuraho", km:380, dur:"7h",
+        spots:["Western Group Temples (UNESCO)","Eastern Group","Panna Tiger Reserve"],
+        stay:"Hotel Lalit Temple View", stayEst:"₹4,500", food:["Raja Café","Mediterraneo"],foodEst:"₹700", fuel:"₹1,600", tip:"Sound & Light show at Khajuraho temples at 7 PM" },
+      { day:"Day 29", from:"Khajuraho", to:"Orchha + Bhopal", km:450, dur:"8h",
+        spots:["Orchha Fort","Ram Raja Temple","Bhimbetka Caves","Bhopal Taj-ul-Masajid"],
+        stay:"MPTDC Lake View Ashok Bhopal", stayEst:"₹3,000", food:["Manohar Dairy Bhopal","Chaat stalls"],foodEst:"₹600", fuel:"₹1,890", tip:"Bhimbetka rock art is 30,000 years old — plan 2 hrs" },
+      { day:"Day 30", from:"Bhopal", to:"Kanha + Jabalpur", km:380, dur:"7h",
+        spots:["Kanha Tiger Reserve","Bhedaghat Marble Rocks","Dhuandhar Waterfall"],
+        stay:"Tuli Tiger Resort Kanha", stayEst:"₹5,000", food:["Resort dining","Jabalpur dhabas"],foodEst:"₹700", fuel:"₹1,600", tip:"Bhedaghat marble gorge is stunning by boat" },
+    ]
+  },
+  {
+    id: 5, leg: "LEG 5", title: "Chhattisgarh → Jharkhand → Bihar",
+    color: "#be185d", days: "Day 37–42", km: 1400,
+    states: ["Chhattisgarh","Jharkhand","Bihar"],
+    route: [
+      { day:"Day 31", from:"Jabalpur", to:"Raipur (Chhattisgarh)", km:310, dur:"6h",
+        spots:["Chitrakote Waterfall (India's Niagara)","Tirathgarh Falls","Bastar Tribal Museum"],
+        stay:"Hotel Babylon Inn Raipur", stayEst:"₹2,800", food:["Hotel Kwality","Chhattisgarhi thali"],foodEst:"₹600", fuel:"₹1,300", tip:"Chitrakote is best in monsoon — stunning 300m wide falls" },
+      { day:"Day 32", from:"Raipur", to:"Ranchi (Jharkhand)", km:390, dur:"7h",
+        spots:["Hundru Falls","Jonha Falls","Rock Garden","Deori Temple"],
+        stay:"Hotel Capitol Hill Ranchi", stayEst:"₹3,000", food:["Hotel Kaveri","Ranchi dhabas"],foodEst:"₹600", fuel:"₹1,640", tip:"Jharkhand roads — Jimny's 4WD will come handy" },
+      { day:"Day 33", from:"Ranchi", to:"Bodh Gaya + Gaya (Bihar)", km:330, dur:"6.5h",
+        spots:["Mahabodhi Temple (UNESCO)","Bodhi Tree","Vishnupad Temple"],
+        stay:"Hotel Siddharth International", stayEst:"₹2,500", food:["Temple prasad","Hotel Fujiya"],foodEst:"₹500", fuel:"₹1,390", tip:"Most sacred Buddhist site on earth — very peaceful" },
+      { day:"Day 34", from:"Bodh Gaya", to:"Vaishali + Patna", km:250, dur:"5h",
+        spots:["Nalanda University Ruins","Vaishali Stupa","Gandhi Maidan Patna"],
+        stay:"Hotel Maurya Patna", stayEst:"₹3,500", food:["Bihar Hotel Litti Chokha","Bihari thali"],foodEst:"₹500", fuel:"₹1,050", tip:"Nalanda ruins are spectacular — allow 3 hrs" },
+    ]
+  },
+  {
+    id: 6, leg: "LEG 6", title: "UP → Delhi → Haryana → Uttarakhand",
+    color: "#0f766e", days: "Day 43–52", km: 1800,
+    states: ["Uttar Pradesh","Haryana","Delhi (NCT)","Uttarakhand"],
+    route: [
+      { day:"Day 35–36", from:"Patna", to:"Varanasi + Allahabad", km:300, dur:"6h",
+        spots:["Kashi Vishwanath","Ganga Aarti Dashashwamedh Ghat","Sarnath","Triveni Sangam"],
+        stay:"Hotel Alka Varanasi", stayEst:"₹2,800", food:["Blue Lassi","Kashi Chaat Bhandar"],foodEst:"₹600", fuel:"₹1,260", tip:"2 nights UP — Ganga aarti is life-changing at dusk" },
+      { day:"Day 37", from:"Varanasi", to:"Agra", km:565, dur:"9h",
+        spots:["Taj Mahal","Agra Fort","Fatehpur Sikri","Itmad-ud-Daulah"],
+        stay:"Hotel Howard Johnson Agra", stayEst:"₹3,500", food:["Pinch of Spice","Sheroes Hangout"],foodEst:"₹700", fuel:"₹2,375", tip:"Taj Mahal sunrise 6 AM — most beautiful light of the day" },
+      { day:"Day 38–39", from:"Agra", to:"Delhi", km:215, dur:"3.5h",
+        spots:["Red Fort","Qutub Minar","India Gate","Humayun's Tomb","Chandni Chowk"],
+        stay:"Ibis Aerocity Delhi", stayEst:"₹4,500", food:["Paranthe Wali Gali","Karim's","INA Market"],foodEst:"₹900", fuel:"₹905", tip:"2 nights Delhi. Use Metro — don't drive inside city" },
+      { day:"Day 40", from:"Delhi", to:"Kurukshetra + Chandigarh (Haryana)", km:270, dur:"5h",
+        spots:["Kurukshetra Battlefield","Brahma Sarovar","Rock Garden Chandigarh","Sukhna Lake"],
+        stay:"Hotel Mountview Chandigarh", stayEst:"₹4,000", food:["Pal Dhaba","Sindhi Sweets"],foodEst:"₹700", fuel:"₹1,135", tip:"Chandigarh is India's most planned city — very clean" },
+      { day:"Day 41–42", from:"Chandigarh", to:"Rishikesh + Haridwar (Uttarakhand)", km:250, dur:"5h",
+        spots:["Har Ki Pauri","Ganga Aarti Haridwar","Laxman Jhula","Neelkanth Mahadev"],
+        stay:"Aloha on the Ganges", stayEst:"₹3,500", food:["Chotiwala Restaurant","Little Buddha Café"],foodEst:"₹700", fuel:"₹1,050", tip:"2 nights — do river rafting at Rishikesh" },
+      { day:"Day 43", from:"Rishikesh", to:"Jim Corbett", km:175, dur:"4h",
+        spots:["Dhikala Safari","Garjiya Devi Temple","Corbett Museum"],
+        stay:"Jim's Jungle Retreat", stayEst:"₹5,500", food:["Resort dining"],foodEst:"₹700", fuel:"₹735", tip:"Book Dhikala zone 90 days in advance" },
+    ]
+  },
+  {
+    id: 7, leg: "LEG 7", title: "Punjab → Himachal Pradesh",
+    color: "#1d4ed8", days: "Day 53–58", km: 1300,
+    states: ["Punjab","Himachal Pradesh"],
+    route: [
+      { day:"Day 44", from:"Corbett", to:"Amritsar (Punjab)", km:530, dur:"9h",
+        spots:["Golden Temple","Wagah Border Ceremony","Jallianwala Bagh","Partition Museum"],
+        stay:"Hotel Golden Tower", stayEst:"₹3,500", food:["Kesar Da Dhaba","Bharawan Da Dhaba"],foodEst:"₹700", fuel:"₹2,225", tip:"Wagah ceremony at sunset — reach by 4 PM sharp" },
+      { day:"Day 45–46", from:"Amritsar", to:"Shimla + Manali (HP)", km:600, dur:"10h",
+        spots:["Shimla Mall Road","Jakhu Temple","Rohtang Pass","Solang Valley","Hadimba Temple"],
+        stay:"Wildflower Hall Shimla / Snow Valley Manali", stayEst:"₹5,000", food:["Café Sol","Johnson's Café","Wake & Bake"],foodEst:"₹900", fuel:"₹2,520", tip:"2 nights split. Rohtang permit mandatory — get it in Manali" },
+      { day:"Day 47", from:"Manali", to:"Dharamshala + McLeod Ganj", km:260, dur:"6h",
+        spots:["Namgyal Monastery","Dalai Lama Temple","Triund Trek","Bhagsu Waterfall"],
+        stay:"Hotel Norbulingka", stayEst:"₹3,500", food:["Nick's Italian Kitchen","Lung Ta Café"],foodEst:"₹700", fuel:"₹1,095", tip:"Dharamshala = Little Lhasa. Very spiritual, very beautiful" },
+    ]
+  },
+  {
+    id: 8, leg: "LEG 8", title: "West Bengal → Sikkim → Northeast",
+    color: "#b45309", days: "Day 59–72", km: 2600,
+    states: ["West Bengal","Sikkim","Assam","Meghalaya","Tripura","Mizoram","Manipur","Nagaland","Arunachal Pradesh"],
+    route: [
+      { day:"Day 48–49", from:"Dharamshala", to:"Kolkata (West Bengal)", km:1500, dur:"2 days",
+        spots:["Victoria Memorial","Howrah Bridge","Dakshineswar Kali","Kumartuli"],
+        stay:"Hotel Hindustan International", stayEst:"₹4,000", food:["Peter Cat","6 Ballygunge Place","Flurys"],foodEst:"₹900", fuel:"₹6,300", tip:"Break at Lucknow overnight. 2 nights Kolkata" },
+      { day:"Day 50", from:"Kolkata", to:"Gangtok (Sikkim)", km:600, dur:"10h",
+        spots:["Rumtek Monastery","MG Marg","Tsomgo Lake","Nathula Pass (permit needed)"],
+        stay:"Hotel Tashi Delek Gangtok", stayEst:"₹3,500", food:["Taste of Tibet","Baker's Café"],foodEst:"₹700", fuel:"₹2,520", tip:"Nathula Pass permit must be arranged in Gangtok" },
+      { day:"Day 51–52", from:"Gangtok", to:"Guwahati + Shillong (Assam + Meghalaya)", km:520, dur:"9h",
+        spots:["Kamakhya Temple Guwahati","Cherrapunji (Sohra)","Living Root Bridges","Elephant Falls"],
+        stay:"Vivanta Guwahati / Polo Towers Shillong", stayEst:"₹4,000", food:["Paradise Restaurant","Lamee Chinese"],foodEst:"₹700", fuel:"₹2,185", tip:"Cherrapunji wettest place on earth — carry rain gear" },
+      { day:"Day 53", from:"Shillong", to:"Agartala (Tripura)", km:490, dur:"9h",
+        spots:["Ujjayanta Palace","Neermahal Water Palace","Tripura Sundari Temple","Unakoti Rock Carvings"],
+        stay:"Hotel Welcome Palace Agartala", stayEst:"₹2,800", food:["Khorika Restaurant","Kasturi"],foodEst:"₹600", fuel:"₹2,060", tip:"Neermahal — palace in middle of a lake — unique!" },
+      { day:"Day 54", from:"Agartala", to:"Aizawl (Mizoram)", km:480, dur:"10h",
+        spots:["Durtlang Hills","Reiek Heritage Village","Blue Mountain (Phawngpui)","Solomon's Temple"],
+        stay:"Hotel Regency Aizawl", stayEst:"₹3,000", food:["David's Kitchen","Local Mizo thali"],foodEst:"₹600", fuel:"₹2,020", tip:"Mizo roads are steep and winding — Jimny 4WD essential" },
+      { day:"Day 55", from:"Aizawl", to:"Imphal (Manipur)", km:280, dur:"7h",
+        spots:["Loktak Lake","INA Memorial Moirang","Ima Keithel (Women's Market)","Kangla Fort"],
+        stay:"Hotel Nirmala Imphal", stayEst:"₹2,800", food:["Thoibi Restaurant","Ima market food"],foodEst:"₹600", fuel:"₹1,175", tip:"Loktak floating islands are surreal — take a boat" },
+      { day:"Day 56", from:"Imphal", to:"Kohima (Nagaland)", km:210, dur:"5h",
+        spots:["Kohima War Cemetery","Dzukou Valley","Nagaland State Museum","Kisama Heritage Village"],
+        stay:"Hotel Japfu Kohima", stayEst:"₹3,000", food:["Dzükou Tribal Kitchen","Café on the Street"],foodEst:"₹600", fuel:"₹885", tip:"Kohima War Cemetery is deeply moving — must visit" },
+      { day:"Day 57–58", from:"Kohima", to:"Itanagar (Arunachal Pradesh)", km:390, dur:"8h",
+        spots:["Tawang Monastery","Sela Pass (4,170m)","Jaswant Garh War Memorial","Bum La Pass"],
+        stay:"Hotel Donyi Polo Ashok", stayEst:"₹3,500", food:["Hotel Bage Rallen","Local Arunachali thali"],foodEst:"₹700", fuel:"₹1,640", tip:"ILP (Inner Line Permit) required for Arunachal — get it in Guwahati" },
+    ]
+  },
+  {
+    id: 9, leg: "LEG 9", title: "Odisha → Andhra Pradesh → Telangana → Home",
+    color: "#dc2626", days: "Day 73–80", km: 2000,
+    states: ["Odisha","Andhra Pradesh","Telangana"],
+    route: [
+      { day:"Day 59–60", from:"Itanagar", to:"Bhubaneswar + Puri (Odisha)", km:1600, dur:"2-3 days",
+        spots:["Lingaraj Temple","Konark Sun Temple (UNESCO)","Jagannath Temple Puri","Chilika Lake"],
+        stay:"Mayfair Lagoon Bhubaneswar", stayEst:"₹4,500", food:["Hare Krishna Restaurant","Wildgrass Puri"],foodEst:"₹800", fuel:"₹6,720", tip:"Break at Kolkata overnight. Konark morning light is breathtaking" },
+      { day:"Day 61–62", from:"Puri", to:"Visakhapatnam + Araku (AP)", km:500, dur:"9h",
+        spots:["Araku Valley","Borra Caves","RK Beach Vizag","INS Kursura Submarine Museum"],
+        stay:"Hotel Daspalla Vizag", stayEst:"₹3,500", food:["Bamboo Chicken (Araku)","King's Restaurant"],foodEst:"₹700", fuel:"₹2,100", tip:"Araku Valley train ride on Kirandul Express is epic" },
+      { day:"Day 63", from:"Vizag", to:"Hyderabad (Telangana)", km:620, dur:"10h",
+        spots:["Charminar","Golconda Fort","Hussain Sagar","Salar Jung Museum"],
+        stay:"Hotel Minerva Grand", stayEst:"₹3,500", food:["Paradise Biryani","Shah Ghouse","Chutneys"],foodEst:"₹800", fuel:"₹2,605", tip:"Hyderabad Biryani at Shah Ghouse — best in the country" },
+      { day:"Day 64", from:"Hyderabad", to:"Tirupati (AP)", km:560, dur:"9h",
+        spots:["Tirumala Venkateswara Temple","Chandragiri Fort","ISKCON Tirupati"],
+        stay:"TTD Guest House Tirupati", stayEst:"₹2,000", food:["TTD Prasadam","Annapurna Hotel"],foodEst:"₹500", fuel:"₹2,355", tip:"Book Tirupati darshan online 30 days in advance" },
+      { day:"Day 65–66", from:"Tirupati", to:"Kochi (Home!)", km:700, dur:"12h",
+        spots:["Optional: Varkala Beach","Alleppey Backwaters en route"],
+        stay:"Home 🏠", stayEst:"—", food:["Kerala meals at wayside hotels"],foodEst:"₹600", fuel:"₹2,940", tip:"Split into 2 days. YOU DID IT! All 28 states completed! 🎉" },
+    ]
+  }
+];
+
+const expenses = [
+  { label: "⛽ Fuel (~16,800 km, Jimny 15 km/l @ ₹105/l)", amount: "₹1,17,600", note: "Biggest variable" },
+  { label: "🏨 Hotels (66 nights avg ₹3,500/night)", amount: "₹2,31,000", note: "Book smart, save 20%" },
+  { label: "🍽 Food (2 pax, 3 meals/day × 66 days)", amount: "₹52,800", note: "₹800/day avg" },
+  { label: "🛣 Tolls & Highway Charges", amount: "₹18,000", note: "Fastag essential" },
+  { label: "🏛 Entry Fees (monuments, national parks, safaris)", amount: "₹18,000", note: "NE permits included" },
+  { label: "📋 Permits (ILP Arunachal, Nathula, Rohtang etc.)", amount: "₹5,000", note: "Plan 2 weeks ahead" },
+  { label: "🔧 Misc (parking, guides, tips, tyre/repair buffer)", amount: "₹20,000", note: "Always carry buffer" },
+];
+
+const tips = [
+  { icon: "🚗", title: "Pre-Trip Jimny Service", body: "Full service before departure — engine oil, brake fluid, coolant, all 4 tyres + spare, suspension check. The NE states have brutal roads." },
+  { icon: "📋", title: "Inner Line Permits (ILP)", body: "Required for Arunachal Pradesh, Nagaland, Mizoram, and Manipur. Apply online or at state checkposts. Arrange 2–3 weeks before entry." },
+  { icon: "📦", title: "What to Pack in the Jimny", body: "Jumper cables, tow rope, tool kit, 2 spare tubes, jerry can (10L), first aid kit, offline Google Maps, power bank, raincoats." },
+  { icon: "🗓", title: "Best Season", body: "October–February is ideal. Avoid June–August for Rajasthan/Gujarat (extreme heat) and NE/Himachal (landslides). Dec–Jan for NE is perfect." },
+  { icon: "💳", title: "Money & Cards", body: "Carry ₹10,000–15,000 cash always — rural NE areas and pilgrim towns have limited ATMs. Activate UPI and use HDFC/SBI travel credit cards." },
+  { icon: "⛽", title: "Fuel Planning in NE", body: "Fill full tank before entering NE states — petrol stations are 100–200 km apart in Arunachal and Mizoram. Carry a 10L jerry can." },
+  { icon: "📡", title: "Connectivity", body: "BSNL SIM works best in NE India where Jio/Airtel have dead zones. Get a BSNL prepaid before entering Assam." },
+  { icon: "🏨", title: "Booking Hotels", body: "Book 3–5 days ahead for popular tourist spots. For NE and rural areas, book day before via MakeMyTrip. Walk-in pricing in rural areas is 30% cheaper." },
+  { icon: "🚦", title: "Driving Rules", body: "No night driving in forest/ghat zones. In NE hill states, horn constantly on blind curves — it's the norm and expected. Start each day by 7 AM." },
+  { icon: "🆘", title: "Emergency Numbers", body: "NHAI: 1033 | National Emergency: 112 | Maruti RSA: 1800-102-1800 | Tourist Police: 1090. Save all before you leave." },
+];
+
+let activeLeg = null;
+let activeDay = null;
+let currentView = "overview";
+
+function totalKm() { return legs.reduce((a,l)=>a+l.km,0); }
+
+function renderTabs() {
+  const tabs = document.getElementById("tabs");
+  const views = ["overview","itinerary","states","budget","tips"];
+  tabs.innerHTML = views.map(v =>
+    `<button class="tab-btn ${v===currentView?'active':''}" data-view="${v}">${v}</button>`
+  ).join("");
+  tabs.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      currentView = btn.dataset.view;
+      if (currentView !== "itinerary") activeLeg = null;
+      renderAll();
+    });
+  });
+}
+
+function renderOverview() {
+  const el = document.getElementById("view-overview");
+  const stats = [
+    {l:"Total Distance", v:`~${totalKm().toLocaleString()} km`},
+    {l:"Journey Duration", v:"66 Days"},
+    {l:"States Covered", v:"28 States"},
+    {l:"Total Budget Est.", v:"₹4.6 – 5.0 Lakhs"},
+  ];
+  let html = `<div class="stats-grid">`;
+  stats.forEach(s=>{
+    html += `<div class="stat-card"><div class="stat-label">${s.l}</div><div class="stat-value">${s.v}</div></div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="section-label">9 Journey Legs</div>`;
+  legs.forEach(leg=>{
+    html += `<div class="leg-card" style="border-color:${leg.color}44" data-leg="${leg.id}">
+      <div class="leg-badge" style="background:${leg.color}">${leg.id}</div>
+      <div style="flex:1">
+        <div class="leg-card-title">${leg.leg}: ${leg.title}</div>
+        <div class="leg-card-sub">${leg.days} • ${leg.km.toLocaleString()} km • ${leg.states.join(", ")}</div>
+      </div>
+      <div class="leg-card-arrow">›</div>
+    </div>`;
+  });
+
+  html += `<div class="route-box">
+    <div class="route-box-title">🗺 Master Route</div>
+    <div class="route-text">
+      <b>Kochi</b>→Munnar→Madurai→Kanyakumari→Ooty→Mysuru→Coorg→Hampi→<b>Bengaluru</b>→<b>Goa</b>→<b>Mumbai</b>→Pune→Aurangabad→<b>Ahmedabad</b>→Kutch→Somnath→<b>Udaipur</b>→Jodhpur→Jaisalmer→Pushkar→<b>Jaipur</b>→Ranthambore→Gwalior→Khajuraho→Bhopal→Kanha→<b>Raipur</b>→<b>Ranchi</b>→Bodh Gaya→<b>Patna</b>→Varanasi→<b>Agra</b>→<b>Delhi</b>→Kurukshetra→<b>Chandigarh</b>→Rishikesh→Corbett→<b>Amritsar</b>→<b>Shimla</b>→<b>Manali</b>→Dharamshala→<b>Kolkata</b>→<b>Gangtok</b>→<b>Guwahati</b>→<b>Shillong</b>→<b>Agartala</b>→<b>Aizawl</b>→<b>Imphal</b>→<b>Kohima</b>→<b>Itanagar</b>→Bhubaneswar→Puri→Vizag→<b>Hyderabad</b>→Tirupati→<b>Kochi</b> 🏁
+    </div>
+  </div>`;
+
+  el.innerHTML = html;
+  el.querySelectorAll(".leg-card").forEach(card=>{
+    card.addEventListener("click", ()=>{
+      activeLeg = parseInt(card.dataset.leg);
+      currentView = "itinerary";
+      activeDay = null;
+      renderAll();
+    });
+  });
+}
+
+function renderItinerary() {
+  const el = document.getElementById("view-itinerary");
+  let html = `<div class="leg-pills">`;
+  legs.forEach(leg=>{
+    const isActive = activeLeg===leg.id;
+    html += `<button class="leg-pill ${isActive?'active':''}" style="--pill-color:${leg.color}" data-leg="${leg.id}">LEG ${leg.id}</button>`;
+  });
+  html += `</div>`;
+
+  if (!activeLeg) {
+    html += `<div class="empty-hint">👆 Select a leg above to view day-by-day itinerary</div>`;
+  } else {
+    const selectedLeg = legs.find(l=>l.id===activeLeg);
+    html += `<div class="leg-header">
+      <div class="leg-header-days" style="color:${selectedLeg.color}">${selectedLeg.days}</div>
+      <div class="leg-header-title">${selectedLeg.leg}: ${selectedLeg.title}</div>
+      <div class="leg-header-sub">${selectedLeg.states.join(" • ")} • ${selectedLeg.km.toLocaleString()} km</div>
+    </div>`;
+
+    selectedLeg.route.forEach((stop,i)=>{
+      const isOpen = activeDay===i;
+      html += `<div class="stop-card" style="border-color:${selectedLeg.color}33">
+        <div class="stop-head" data-day="${i}">
+          <div class="stop-day-badge" style="background:${selectedLeg.color}">${stop.day}</div>
+          <div class="stop-route">
+            <span class="from">${stop.from}</span>
+            <span class="arrow">→</span>
+            <span class="to">${stop.to}</span>
+            <span class="meta">${stop.km} km • ${stop.dur}</span>
+          </div>
+          <span class="stop-chevron">${isOpen?'▲':'▼'}</span>
+        </div>
+        <div class="stop-body ${isOpen?'':'hidden'}" style="border-color:${selectedLeg.color}22">
+          <div class="stop-grid2">
+            <div class="stop-panel">
+              <div class="panel-label">📍 SPOTS</div>
+              ${stop.spots.map(s=>`<div class="panel-line">• ${s}</div>`).join("")}
+            </div>
+            <div class="stop-panel">
+              <div class="panel-label">🍽 FOOD</div>
+              ${stop.food.map(f=>`<div class="panel-line">• ${f}</div>`).join("")}
+              <div class="panel-note">Est: ${stop.foodEst}/day</div>
+            </div>
+          </div>
+          <div class="stop-panel" style="margin-top:10px">
+            <div class="panel-label">🏨 STAY</div>
+            <div class="panel-line" style="font-size:13px">${stop.stay}</div>
+            <div class="panel-note">Est: ${stop.stayEst}/night</div>
+          </div>
+          <div class="stop-grid2" style="margin-top:10px">
+            <div class="stop-panel">
+              <div class="panel-label">⛽ FUEL</div>
+              <div class="fuel-value">${stop.fuel}</div>
+            </div>
+            <div class="stop-tip-panel">
+              <div class="stop-tip-label">⚠ TIP</div>
+              <div class="stop-tip-text">${stop.tip}</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  el.innerHTML = html;
+  el.querySelectorAll(".leg-pill").forEach(pill=>{
+    pill.addEventListener("click", ()=>{
+      activeLeg = parseInt(pill.dataset.leg);
+      activeDay = null;
+      renderAll();
+    });
+  });
+  el.querySelectorAll(".stop-head").forEach(head=>{
+    head.addEventListener("click", ()=>{
+      const day = parseInt(head.dataset.day);
+      activeDay = activeDay===day ? null : day;
+      renderAll();
+    });
+  });
+}
+
+function renderStates() {
+  const el = document.getElementById("view-states");
+  let html = `<div class="section-label">All 28 States Coverage Checklist</div><div class="states-grid">`;
+  legs.forEach(leg=>{
+    leg.states.forEach(state=>{
+      html += `<div class="state-card" style="border-color:${leg.color}33">
+        <div class="state-dot" style="background:${leg.color}"></div>
+        <div>
+          <div class="state-name">${state}</div>
+          <div class="state-leg">LEG ${leg.id}: ${leg.title}</div>
+        </div>
+        <div class="state-check">✅</div>
+      </div>`;
+    });
+  });
+  html += `</div>
+    <div class="states-summary">
+      <div class="states-summary-num">28 / 28 States ✅</div>
+      <div class="states-summary-note">All Indian states covered — Union Territories excluded as requested</div>
+    </div>`;
+  el.innerHTML = html;
+}
+
+function renderBudget() {
+  const el = document.getElementById("view-budget");
+  let html = `<div class="section-label">Full Trip Budget — 2 Pax, 66 Days</div>`;
+  expenses.forEach(e=>{
+    html += `<div class="expense-row">
+      <div>
+        <div class="expense-label">${e.label}</div>
+        <div class="expense-note">${e.note}</div>
+      </div>
+      <div class="expense-amount">${e.amount}</div>
+    </div>`;
+  });
+  html += `<div class="total-box">
+    <div>
+      <div class="total-label">TOTAL ESTIMATED</div>
+      <div class="total-sub">2 People • 66 Days • 28 States</div>
+    </div>
+    <div class="total-value">₹4.6 – 5.0L</div>
+  </div>`;
+
+  html += `<div class="budget-cols">
+    <div class="budget-col">
+      <div class="budget-col-title good">💡 Budget Tips</div>
+      ${["Book via MakeMyTrip for 20-25% off","Eat at Udupi / state canteens","Carry OYO app for last-minute hotels","HDFC travel card for fuel cashback","Share rooms if solo sections arise"].map(t=>`<div class="budget-line">• ${t}</div>`).join("")}
+    </div>
+    <div class="budget-col">
+      <div class="budget-col-title warn">⚠ Budget Watch</div>
+      ${["NE permits add ₹5,000+","HP mountain tolls are steep","National Park safaris ₹2,000–5,000 each","Manali off-season hotels 60% cheaper","Petrol 15% costlier in NE states"].map(t=>`<div class="budget-line">• ${t}</div>`).join("")}
+    </div>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function renderTips() {
+  const el = document.getElementById("view-tips");
+  let html = `<div class="section-label">Jimny All-India Road Trip Essentials</div>`;
+  tips.forEach(t=>{
+    html += `<div class="tip-card">
+      <div class="tip-icon">${t.icon}</div>
+      <div>
+        <div class="tip-title">${t.title}</div>
+        <div class="tip-body">${t.body}</div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderAll() {
+  renderTabs();
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-"+currentView).classList.add("active");
+
+  renderOverview();
+  renderItinerary();
+  renderStates();
+  renderBudget();
+  renderTips();
+}
+
+renderAll();
+</script>
+
+</body>
+</html>
